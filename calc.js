@@ -1,17 +1,19 @@
-let a = ""
-let b = ""
-let sign = ""
-let finish = false
+let firstValue = ""
+let secondValue = ""
+let operationSign = ""
+let isFinished = false
+let isPercentPressed = false
 let digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."]
-let actions = ["+", "-", "/", "*"]
+let actions = ["+", "-", "/", "*", "+/-", "%"]
 
 let output = document.querySelector(".calculator__input__window")
 
 function clearAll() {
-	a = ""
-	b = ""
-	sign = ""
-	finish = false
+	firstValue = ""
+	secondValue = ""
+	operationSign = ""
+	isFinished = false
+	isPercentPressed = false
 	output.textContent = 0
 }
 
@@ -23,53 +25,72 @@ document.querySelector(".calculator__buttons").onclick = (event) => {
 
 	output.textContent = ""
 
-	const key = event.target.textContent
+	const pressedKey = event.target.textContent
 
-	if (digits.includes(key)) {
-		if (b === "" && sign === "") {
-			a += key
-			output.textContent = a
-		} else if (a !== "" && b !== "" && finish) {
-			b = key
-			finish = false
-			output.textContent = b
+	if (digits.includes(pressedKey)) {
+		if (secondValue === "" && operationSign === "") {
+			firstValue += pressedKey
+			output.textContent = firstValue
+		} else if (firstValue !== "" && secondValue !== "" && isFinished) {
+			secondValue = pressedKey
+			isFinished = false
+			output.textContent = secondValue
 		} else {
-			b += key
-			output.textContent = b
+			secondValue += pressedKey
+			output.textContent = secondValue
+			if (isPercentPressed === true) {
+				secondValue += pressedKey
+				output.textContent = secondValue / 100
+			}
 		}
 		return
 	}
 
-	if (actions.includes(key)) {
-		sign = key
-		output.textContent = sign
-		return
+	if (actions.includes(pressedKey)) {
+		if (pressedKey === "+/-") {
+			firstValue *= -1
+			output.textContent = firstValue
+		} else if (pressedKey === "%") {
+			isPercentPressed = true
+			output.textContent = "%"
+		} else {
+			operationSign = pressedKey
+			output.textContent = operationSign
+			return
+		}
 	}
 
-	if (key == "=") {
-		if (b === "") b = a
-		switch (sign) {
+	if (pressedKey == "=") {
+		if (secondValue === "") secondValue = firstValue
+		switch (operationSign) {
 			case "+":
-				a = +a + +b
+				isPercentPressed
+					? (firstValue = +firstValue + (firstValue / 100) * secondValue)
+					: (firstValue = +firstValue + +secondValue)
 				break
 			case "-":
-				a = a - b
+				isPercentPressed
+					? (firstValue = +firstValue - (firstValue / 100) * secondValue)
+					: (firstValue = firstValue - secondValue)
 				break
 			case "*":
-				a = a * b
+				isPercentPressed
+					? (firstValue = (firstValue / 100) * secondValue)
+					: (firstValue = firstValue * secondValue)
 				break
 			case "/":
-				if (b === "0") {
+				if (secondValue === "0") {
 					output.textContent = "Ошибка"
-					a = ""
-					b = ""
-					sign = ""
+					firstValue = ""
+					secondValue = ""
+					operationSign = ""
 					return
 				}
-				a = a / b
+				firstValue = firstValue / secondValue
 				break
 		}
-		finish = true
-		output.textContent = a
+		isFinished = true
+		isPercentPressed = false
+		output.textContent = firstValue
 	}
 }
